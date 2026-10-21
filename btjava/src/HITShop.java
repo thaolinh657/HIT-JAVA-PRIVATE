@@ -12,6 +12,7 @@ public class HITShop {
         double thanhTien=giaCa*soLuong;
         System.out.println("Thanh Tien: " + thanhTien);
         double VAT_RATE = 0.1;
+
         int SHIPPING_FEE=20000;
         double tong = thanhTien+VAT_RATE*thanhTien+SHIPPING_FEE;
         System.out.println("Tong thanh tien: " +tong);
