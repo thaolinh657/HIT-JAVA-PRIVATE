@@ -1,11 +1,12 @@
 package model;
 
 public class Product {
-    public String id;
-    public String name;
-    public double price;
-    public int stock;
+    private String id;
+    private String name;
+    private double price;
+    private int stock;
     private static int count ;
+
     public Product(String id, String name, double price, int stock) {
         this.id = id;
         this.name = name;
@@ -15,13 +16,16 @@ public class Product {
     }
 
     public static int getCount() {
+
         return count;
     }
 
     public String getId() {
+
         return id;
     }
     public String getName() {
+
         return name;
     }
 

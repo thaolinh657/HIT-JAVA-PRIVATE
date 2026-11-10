@@ -13,12 +13,15 @@ public class cartItem {
         return product;
     }
     public int getQuantity() {
+
         return quantity;
     }
     public void setQuantity(int quantity) {
+
         this.quantity = quantity;
     }
     public double getTotal(){
+
         return product.getPrice()*quantity;
     }
 }
