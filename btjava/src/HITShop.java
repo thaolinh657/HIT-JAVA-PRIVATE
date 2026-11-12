@@ -1,110 +1,161 @@
 import model.*;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class HITShop {
-    private static final customer currentCustomer =
-            new customer("C01", "Linh Nguyễn", "0900000001");
-    private static final List<cartItem> cart = new ArrayList<>();
+    private static final Customer currentCustomer = new Customer("C01", "Linh Nguyễn", "0900000001");
+    private static final List<Product> products = new ArrayList<>();
+    private static Order currentOrder = null;
+    private static final Scanner sc = new Scanner(System.in);
 
     public static void main(String[] args) {
-        Product product1 = new Product("P01", "Áo thun", 150000, 20);
-        Product product2 = new Product("P02", "Bình nước", 50000, 10);
-        Scanner scanner = new Scanner(System.in);
-        int choice;
+        int choice = -1; // Khởi tạo giá trị ban đầu cho choice
+        initData();
 
         do {
-            System.out.println("1. Thêm mặt hàng");
-            System.out.println("2. Xóa mặt hàng");
-            System.out.println("3. Xem giỏ hàng");
-            System.out.println("4. Xem tổng tiền");
+            System.out.println("\n===== QUẢN LÝ CỬA HÀNG HITSHOP =====");
+            System.out.println("1. Xem danh sách sản phẩm");
+            System.out.println("2. Tạo đơn hàng mới");
+            System.out.println("3. Thêm mặt hàng vào đơn");
+            System.out.println("4. Xóa mặt hàng khỏi đơn");
+            System.out.println("5. Xem chi tiết đơn hàng");
+            System.out.println("6. Xác nhận đơn hàng");
+            System.out.println("7. Hủy đơn hàng");
             System.out.println("0. Thoát");
             System.out.print("Nhập lựa chọn: ");
-            choice = scanner.nextInt();
-            scanner.nextLine();
-
+            choice = Integer.parseInt(sc.nextLine());
             switch (choice) {
                 case 1:
-                    System.out.println(product1.getId() + " | " + product1.getName());
-                    System.out.println(product2.getId() + " | " + product2.getName());
-                    System.out.print("Nhập mã sản phẩm: ");
-                    String id = scanner.nextLine();
-                    Product product;
-                    if (id.equals("P01")) {
-                        product = product1;
-                    } else if (id.equals("P02")) {
-                        product = product2;
-                    } else {
-                        System.out.println("Không tìm thấy sản phẩm.");
-                        break;
-                    }
-
-                    System.out.print("Nhập số lượng: ");
-                    int quantity = scanner.nextInt();
-                    scanner.nextLine();
-                    addItem(product, quantity);
+                    printProducts();
                     break;
                 case 2:
-                    printItems();
-                    System.out.print("Nhập số thứ tự cần xóa: ");
-                    int displayNumber = scanner.nextInt();
-                    scanner.nextLine();
-                    removeItem(displayNumber - 1);
+                    currentOrder = new Order("ORD-001", currentCustomer);
+                    System.out.println("Đã tạo đơn hàng mới cho khách: " + currentCustomer.getName());
                     break;
                 case 3:
-                    printItems();
+                    addItemToOrder();
                     break;
                 case 4:
-                    System.out.println("Tổng tiền: " + calculateTotal());
+                    removeItemFromOrder();
+                    break;
+                case 5:
+                    viewOrder();
+                    break;
+                case 6:
+                    if (currentOrder != null) {
+                        currentOrder.confirm();
+                    } else {
+                        System.out.println("Lỗi: Bạn chưa tạo đơn hàng nào!");
+                    }
+                    break;
+                case 7:
+                    if (currentOrder != null) {
+                        currentOrder.cancel();
+                    } else {
+                        System.out.println("Lỗi: Bạn chưa tạo đơn hàng nào!");
+                    }
                     break;
                 case 0:
+                    System.out.println("Cảm ơn bạn đã sử dụng hệ thống!");
                     break;
                 default:
-                    System.out.println("Lựa chọn không hợp lệ.");
+                    if (choice != -1) {
+                        System.out.println("Lựa chọn không hợp lệ.");
+                    } else {
+                        System.out.println("Vui lòng nhập một số hợp lệ!");
+                    }
             }
         } while (choice != 0);
-
-        scanner.close();
+        sc.close();
+    }
+    private static void initData() {
+        // Tận dụng Đa hình: Mảng Product nhưng có thể chứa cả Book và ElectronicProduct
+        products.add(new Product("P01", "Áo thun", 150000, 20));
+        products.add(new Product("P02", "Bình nước", 50000, 10));
+        products.add(new Book("P03", "Java cơ bản", 120000, 5, "An Nguyen"));
+        products.add(new ElectronicProduct("P04", "Bàn phím", 400000, 3, 12));
     }
 
-    static void addItem(Product product, int quantity) {
-        if (quantity <= 0) {
-            System.out.println("Số lượng phải lớn hơn 0.");
+    private static void printProducts() {
+        System.out.println("\n--- DANH SÁCH KHO HÀNG ---");
+        for (Product p : products) {
+            System.out.printf("Mã: %s | %-35s | Giá: %,.0f đ | Tồn: %d\n",
+                    p.getId(), p.getDescription(), p.getPrice(), p.getStock());
+        }
+    }
+
+    private static void addItemToOrder() {
+        if (currentOrder == null) {
+            System.out.println("Lỗi: Bạn phải tạo đơn hàng trước (Chọn phím 2).");
             return;
         }
-        cart.add(new cartItem(product, quantity));
-    }
+        printProducts();
+        System.out.print("Nhập mã sản phẩm cần thêm (P01, P02...): ");
+        String id = sc.nextLine().trim();
 
-    static void removeItem(int index) {
-        if (index < 0 || index >= cart.size()) {
-            System.out.println("Không tìm thấy mặt hàng.");
+        Product selectedProduct = null;
+        for (Product p : products) {
+            if (p.getId().equalsIgnoreCase(id)) {
+                selectedProduct = p;
+                break;
+            }
+        }
+
+        if (selectedProduct == null) {
+            System.out.println("Lỗi: Không tìm thấy sản phẩm mã " + id);
             return;
         }
-        cart.remove(index);
-    }
-
-    static void printItems() {
-        System.out.println("Khách hàng: " + currentCustomer);
-        if (cart.isEmpty()) {
-            System.out.println("Giỏ hàng đang trống.");
+        System.out.print("Nhập số lượng: ");
+        int quantity;
+        try {
+            quantity = Integer.parseInt(sc.nextLine());
+        } catch (NumberFormatException e) {
+            System.out.println("Lỗi: Số lượng phải là số nguyên!");
             return;
         }
-        for (int i = 0; i < cart.size(); i++) {
-            cartItem item = cart.get(i);
-            Product product = item.getProduct();
-            System.out.println((i + 1) + ". " + product.getId() + " | "
-                    + product.getName() + " | " + product.getPrice()
-                    + " | SL: " + item.getQuantity() + " | Thành tiền: " + item.getTotal());
-        }
+        CartItem item = new CartItem(selectedProduct, quantity);
+        currentOrder.addItem(item);
     }
 
-    static double calculateTotal() {
-        double total = 0;
-        for (cartItem item : cart) {
-            total += item.getTotal();
+    private static void removeItemFromOrder() {
+        if (currentOrder == null) {
+            System.out.println("Lỗi: Bạn chưa tạo đơn hàng nào.");
+            return;
         }
-        return total;
+        System.out.print("Nhập mã sản phẩm muốn xóa khỏi đơn hàng: ");
+        String pId = sc.nextLine().trim();
+
+        // Tận dụng hàm xóa đã được đóng gói an toàn trong class Order
+        currentOrder.removeItem(pId);
+    }
+    private static void viewOrder() {
+        if (currentOrder == null) {
+            System.out.println("Bạn chưa tạo đơn hàng nào.");
+            return;
+        }
+        System.out.println("\n=== CHI TIẾT ĐƠN HÀNG " + currentOrder.getId() + " ===");
+        System.out.println("Khách hàng: " + currentOrder.getCustomer().getName() + " - SĐT: " + currentOrder.getCustomer().getPhone());
+        System.out.println("Trạng thái: " + currentOrder.getStatus());
+        System.out.println("Danh sách sản phẩm trong đơn:");
+
+        List<CartItem> items = currentOrder.getItems();
+        if (items.isEmpty()) {
+            System.out.println(" (Đơn hàng đang trống)");
+        } else {
+            for (int i = 0; i < items.size(); i++) {
+                CartItem item = items.get(i);
+                Product p = item.getProduct();
+                System.out.println((i + 1) + ". " + p.getId() + " | " + p.getName()
+                        + " | Giá: " + p.getPrice()
+                        + " | SL: " + item.getQuantity()
+                        + " | Thành tiền: " + item.getTotal());
+            }
+        }
+        System.out.println("----------------------------------");
+        System.out.printf("Cộng tiền hàng:  %,.0f đ\n", currentOrder.getSubtotal());
+        System.out.printf("Phí vận chuyển:  %,.0f đ\n", currentOrder.getShippingFee());
+        System.out.printf("TỔNG THANH TOÁN: %,.0f đ\n", currentOrder.getTotal());
     }
 }

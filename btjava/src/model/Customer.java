@@ -1,11 +1,11 @@
 package model;
 
-public class customer {
+public class Customer {
     private String id;
     private String name;
     private String phone;
 
-    public customer(String id, String name, String phone) {
+    public Customer(String id, String name, String phone) {
         this.id = id;
         this.name = name;
         this.phone = phone;
